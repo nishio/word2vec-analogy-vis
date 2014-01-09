@@ -111,17 +111,23 @@ while True:
     for a in range(N):
         d, w, c = ranking[a]
         print("%50s\t\t%f" % (w, d));
-        if args.vis:
-            add_vis_target(c)
 
     if args.vis:
         import matplotlib.pyplot as plt
-        for c in bi:
+        for a in range(10):
+            d, w, c = ranking[a]
             add_vis_target(c)
 
         xs, ys, ws = zip(*vis_target)
         ax = plt.figure().add_subplot(111)
         ax.scatter(xs, ys, marker='o')
+        ax.set_xlabel("'%s' - '%s'" % (st[1], st[0]))
+        ax.set_ylabel("'%s' - '%s'" % (st[2], st[0]))
+
+        x1 = vec.dot(e1)
+        x2 = vec.dot(e2)
+        x1, x2 = x1 - tw * x2, x2 - tw * x1
+        ax.scatter([x1], [x2], marker='o', facecolor='red')
 
         for x, y, w in vis_target:
             plt.annotate(
