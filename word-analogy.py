@@ -18,6 +18,15 @@ def normalize(vec, inplace=False):
     else:
         return vec / mag_vec
 
+def add_vis_target(c):
+    v = M[c] - M[bi[0]]
+    x1 = v.dot(e1)
+    x2 = v.dot(e2)
+    x1, x2 = x1 - tw * x2, x2 - tw * x1
+    if -n1 < x1 < 2 * n1 and -n2 < x2 < 2 * n2:
+        vis_target.append((x1, x2, vocab[c]))
+
+
 N = 40
 
 f = file('vectors.bin', 'rb')
@@ -94,27 +103,24 @@ while True:
 
     ranking = []
     for c in range(words):
-        if args.vis:
-            v = M[c] - M[bi[0]]
-            x1 = v.dot(e1)
-            x2 = v.dot(e2)
-            x1, x2 = x1 - tw * x2, x2 - tw * x1
-            if -n1 < x1 < 2 * n1 and -n2 < x2 < 2 * n2:
-                vis_target.append((x1, x2, vocab[c]))
         if c in bi: continue
         dist = vec.dot(M[c])
-        ranking.append((dist, vocab[c]))
+        ranking.append((dist, vocab[c], c))
 
     ranking.sort(reverse=True)
     for a in range(N):
-        d, w = ranking[a]
+        d, w, c = ranking[a]
         print("%50s\t\t%f" % (w, d));
+        if args.vis:
+            add_vis_target(c)
 
     if args.vis:
         import matplotlib.pyplot as plt
-        # plt.annotate( "%s" %str(j), xy=(i,j), xytext=(-5, 5), ha='right', textcoords='offset points')
+        for c in bi:
+            add_vis_target(c)
+
         xs, ys, ws = zip(*vis_target)
-        ax = plt.gcf().add_subplot(111)
+        ax = plt.figure().add_subplot(111)
         ax.scatter(xs, ys, marker='o')
 
         for x, y, w in vis_target:
@@ -126,7 +132,7 @@ while True:
     if args.test:
         expected = [(int(x * 10000), y) for (x, y) in
             [(0.43589739071989975, 'its'), (0.40574892064435714, 'in'), (0.37634475225790609, 'and'), (0.3357552560549707, 's'), (0.33309901380186097, 'from')]]
-        got = [(int(x * 10000), y) for (x, y) in ranking[:5]]
+        got = [(int(x * 10000), y) for (x, y, c) in ranking[:5]]
         if got == expected:
             print 'ok.'
         else:
