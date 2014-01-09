@@ -1,13 +1,20 @@
 """
 port of word-analogy.c
 """
+import argparse
 import struct
 from math import sqrt
-import Queue
+import numpy as np
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--test', action='store_true', help='use small data and do regression test')
+args = parser.parse_args()
+
 N = 40
 
 f = file('vectors.bin', 'rb')
 words, size = map(int, f.readline().split())
+if args.test: words = 50  # small data
 
 vocab = [None] * words
 M = [None] * words  # matrix
@@ -39,8 +46,11 @@ f.close()
 while True:
     bestd = [0] * N
     bestw = [None] * N
-    st1 = raw_input("Enter three words (EXIT to break): ")
-    if st1 == 'EXIT': break
+    if not args.test:
+        st1 = raw_input("Enter three words (EXIT to break): ")
+        if st1 == 'EXIT': break
+    else:
+        st1 = 'a the of'
 
     cn = 0
     b = 0
@@ -88,3 +98,13 @@ while True:
     for a in range(N):
         d, w = ranking[a]
         print("%50s\t\t%f" % (w, d));
+
+    if args.test:
+        expected = [(0.43589739071989975, 'its'), (0.40574892064435714, 'in'), (0.37634475225790609, 'and'), (0.3357552560549707, 's'), (0.33309901380186097, 'from')]
+        if ranking[:5] == expected:
+            print 'ok.'
+        else:
+            print ranking[:5]
+            print expected
+            print 'ng.'
+        break
