@@ -88,11 +88,13 @@ while True:
         print("%50s\t\t%f" % (w, d));
 
     if args.test:
-        expected = [(0.43589739071989975, 'its'), (0.40574892064435714, 'in'), (0.37634475225790609, 'and'), (0.3357552560549707, 's'), (0.33309901380186097, 'from')]
-        if ranking[:5] == expected:
+        expected = [(int(x * 10000), y) for (x, y) in
+            [(0.43589739071989975, 'its'), (0.40574892064435714, 'in'), (0.37634475225790609, 'and'), (0.3357552560549707, 's'), (0.33309901380186097, 'from')]]
+        got = [(int(x * 10000), y) for (x, y) in ranking[:5]]
+        if got == expected:
             print 'ok.'
         else:
-            print ranking[:5]
+            print got
             print expected
             print 'ng.'
         break
