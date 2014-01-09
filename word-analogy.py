@@ -8,7 +8,15 @@ import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test', action='store_true', help='use small data and do regression test')
+parser.add_argument('--vis', action='store_true', help='visualize')
 args = parser.parse_args()
+
+def normalize(vec, inplace=False):
+    mag_vec = np.linalg.norm(vec, 2)
+    if inplace:
+        vec /= mag_vec
+    else:
+        return vec / mag_vec
 
 N = 40
 
@@ -33,8 +41,7 @@ for b in range(words):
     for a in range(size):
         M[b][a] = struct.unpack('f', f.read(FLOAT_SIZE))[0]
 
-    mag_vec = np.linalg.norm(M[b], 2)
-    M[b] /= mag_vec  # normalize vector
+    normalize(M[b], True)
     assert f.read(1) == '\n'  # strip newline
 
 f.close()
@@ -74,18 +81,47 @@ while True:
     print("\n                                       Word              Distance\n------------------------------------------------------------------------");
 
     vec = M[bi[1]] - M[bi[0]] + M[bi[2]]
-    mag_vec = np.linalg.norm(vec, 2)
-    vec /= mag_vec  # normalize vector
+    normalize(vec, True)
+    if args.vis:
+        d1 = M[bi[1]] - M[bi[0]]
+        d2 = M[bi[2]] - M[bi[0]]
+        n1 = np.linalg.norm(d1, 2)
+        n2 = np.linalg.norm(d2, 2)
+        e1 = normalize(d1)
+        e2 = normalize(d2)
+        tw = e1.dot(e2)
+        vis_target = []
 
     ranking = []
     for c in range(words):
+        if args.vis:
+            v = M[c] - M[bi[0]]
+            x1 = v.dot(e1)
+            x2 = v.dot(e2)
+            x1, x2 = x1 - tw * x2, x2 - tw * x1
+            if -n1 < x1 < 2 * n1 and -n2 < x2 < 2 * n2:
+                vis_target.append((x1, x2, vocab[c]))
         if c in bi: continue
         dist = vec.dot(M[c])
         ranking.append((dist, vocab[c]))
+
     ranking.sort(reverse=True)
     for a in range(N):
         d, w = ranking[a]
         print("%50s\t\t%f" % (w, d));
+
+    if args.vis:
+        import matplotlib.pyplot as plt
+        # plt.annotate( "%s" %str(j), xy=(i,j), xytext=(-5, 5), ha='right', textcoords='offset points')
+        xs, ys, ws = zip(*vis_target)
+        ax = plt.gcf().add_subplot(111)
+        ax.scatter(xs, ys, marker='o')
+
+        for x, y, w in vis_target:
+            plt.annotate(
+                w, xy = (x, y))
+
+        plt.savefig('vis.png')
 
     if args.test:
         expected = [(int(x * 10000), y) for (x, y) in
