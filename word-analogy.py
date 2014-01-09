@@ -72,15 +72,10 @@ while True:
 
     if b == 0: continue
     print("\n                                       Word              Distance\n------------------------------------------------------------------------");
-    vec = [0] * size
-    for a in range(size):
-        vec[a] = M[bi[1]][a] - M[bi[0]][a] + M[bi[2]][a]
-    mag_vec = 0.0
-    for a in range(size):
-        mag_vec += vec[a] * vec[a]
-    mag_vec = sqrt(mag_vec)
-    for a in range(size):
-        vec[a] /= mag_vec
+
+    vec = M[bi[1]] - M[bi[0]] + M[bi[2]]
+    mag_vec = np.linalg.norm(vec, 2)
+    vec /= mag_vec  # normalize vector
 
     ranking = []
     for c in range(words):
