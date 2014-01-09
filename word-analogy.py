@@ -29,16 +29,12 @@ for b in range(words):
         if c == ' ': break
         s += c
     vocab[b] = s
-    M[b] = [None] * size
-    mag_vec = 0.0
+    M[b] = np.zeros(size)
     for a in range(size):
         M[b][a] = struct.unpack('f', f.read(FLOAT_SIZE))[0]
-        mag_vec += M[b][a] * M[b][a]
 
-    mag_vec = sqrt(mag_vec)
-    for a in range(size):
-        M[b][a] /= mag_vec  # normalize vector
-
+    mag_vec = np.linalg.norm(M[b], 2)
+    M[b] /= mag_vec  # normalize vector
     assert f.read(1) == '\n'  # strip newline
 
 f.close()
