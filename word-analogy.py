@@ -80,10 +80,7 @@ while True:
     ranking = []
     for c in range(words):
         if c in bi: continue
-        dist = 0.0
-        for a in range(size):
-            dist += vec[a] * M[c][a]
-
+        dist = vec.dot(M[c])
         ranking.append((dist, vocab[c]))
     ranking.sort(reverse=True)
     for a in range(N):
